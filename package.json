@@ -1,0 +1,11 @@
+{
+  "name": "tweet_filter",
+  "version": "1.0.0",
+  "description": "Follow a twitter user and retweet based on a filter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dan Corder",
+  "license": "MIT"
+}
