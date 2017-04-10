@@ -1,6 +1,52 @@
+'use strict'
+
 function filterTweets() {
+    var logging = true;
+    var live = false;
 
     var Twitter = require('twitter');
+    var AWS = require("aws-sdk");
+
+    AWS.config.update({
+        region: "us-west-2",
+        endpoint: "http://localhost:8000"
+    });
+
+    function describeTableCallback(error, data) {
+        if (error) {
+            log('Error getting table details: ' + JSON.stringify(error, null, 2));
+
+            if (error.code === 'ResourceNotFoundException') {
+                var params = {
+                    TableName : "latestTweetProcessed",
+                    KeySchema: [
+                        { AttributeName: "twitterStream", KeyType: "HASH"}
+                    ],
+                    AttributeDefinitions: [
+                        { AttributeName: "twitterStream", AttributeType: "S" }
+                    ],
+                    ProvisionedThroughput: {
+                        ReadCapacityUnits: 1,
+                        WriteCapacityUnits: 1
+                    }
+                };
+                dynamodb.createTable(params, createTableCallback);
+            } else {
+                log('Unrecognised error getting table details. Aborting.');
+            }
+        } else {
+            createTableCallback();
+        }
+    }
+
+    function createTableCallback(error, data) {
+        if (error) {
+            log('Error creating table: ' + JSON.stringify(error, null, 2));
+        } else {
+            //client.get('statuses/user_timeline', timelineParams, timelineCallback);
+        }
+    }
+
 
     var client = new Twitter({
         consumer_key: 'PIn3Ef1nElOQ5bRODTG49dU3t',
@@ -15,9 +61,6 @@ function filterTweets() {
         'Gyrados',
         //qq:DCC Add more
     ];
-
-    var logging = true;
-    var live = false;
 
     function log(message) {
         if (logging) {
@@ -87,7 +130,9 @@ function filterTweets() {
         since_id: getHighestTweetId()
     };
 
-    client.get('statuses/user_timeline', timelineParams, timelineCallback);
+    var dynamodb = new AWS.DynamoDB();
+
+    dynamodb.describeTable({ TableName: 'latestTweetProcessed'}, describeTableCallback);
 }
 
 filterTweets();

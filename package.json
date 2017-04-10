@@ -10,5 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "twitter": "^1.7.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.38.0"
   }
 }
