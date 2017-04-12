@@ -111,6 +111,8 @@ function filterTweets() {
         }
     }
 
+    var filteredTweetCount = 0;
+    var latestTweetId = undefined;
     function timelineCallback(error, tweets, response) {
         if (error) {
             const errorMessage = 'Error getting tweets: ' + error;
@@ -120,22 +122,43 @@ function filterTweets() {
 
         log('Got tweets');
 
+        latestTweetId = getLatestTweetId(tweets);
         var filteredTweets = filter(tweets);
 
-        for (var i = 0; i < filteredTweets.length; i++) {
-            retweet(filteredTweets[i]);
-            //qq:DCC handle multiple callbacks
-            //qq:DCC write highest tweet back to DB
+        if (filteredTweets.length === 0) {
+            log('Nothing to retweet');
+            writeLatestTweetToDb();
+        }
+        else {
+            filteredTweetCount = filteredTweets.length;
+
+            for (var i = 0; i < filteredTweets.length; i++) {
+                retweet(filteredTweets[i]);
+            }
         }
     };
+
+    function getLatestTweetId(tweets) {
+        if (tweets.length === 0) {
+            return undefined;
+        }
+
+        //qq:DCC
+    }
+
+    function writeLatestTweetToDb() {
+        if (latestTweetId !== undefined) {
+            //qq:DCC
+        }
+
+        context.done(null, "success");
+    }
 
     function filter(tweets) {
         log('Filtering ' + tweets.length + ' tweets');
         //qq:DCC filter
 
         var ret = [];
-        ret.push(tweets[0]);
-        log(ret);
         return ret;
     };
 
@@ -152,11 +175,20 @@ function filterTweets() {
     };
 
     function retweetCallback(error, tweet, response) {
-        log(error);
+        // Node is single threaded so this is safe.
+        filteredTweetCount--;
+
         if(error) {
-            throw error.message;
+            log(error);
+            //qq:DCC anything else we can do? Throwing will stop us updating DynamoDB.
+        }
+        else {
+            log('Retweet success!');
         }
 
-        log('Retweet success!');
+        if (filteredTweetCount === 0) {
+            // This is the last callback
+            writeLatestTweetToDb();
+        }
     };
 }
