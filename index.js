@@ -32,6 +32,7 @@ function filterTweets(event, context, callback) {
         'Lapras',
         'Snorlax',
         'Gyrados',
+        'Togetic'
         //qq:DCC Add more
     ];
 
@@ -158,8 +159,9 @@ function filterTweets(event, context, callback) {
         log('retweeting tweet id ' + tweet.id_str);
 
         if (live) {
-            log('Retweeting: ' + tweet);
             twitterClient.post('statuses/retweet', retweetParams, retweetCallback);
+        } else {
+            retweetCallback();
         }
     };
 
@@ -224,13 +226,20 @@ function filterTweets(event, context, callback) {
 
     function filter(tweets) {
         log('Filtering ' + tweets.length + ' tweets');
-        //qq:DCC Actually filter
-
-        var ret = [];
-        return ret;
+        return tweets.filter(t => matchesFilter(t));
     };
 
+    function matchesFilter(tweet) {
+        //[London] Lapras (M) (IV: 57%) until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
+        var textParser = /\[.*\] (.*) \(.*\) \(IV: \d+%\) until.*/;
+        var matchResult = textParser.exec(tweet.text);
 
+        if (matchResult === null) {
+            return false;
+        }
+
+        var pokemonName = matchResult[1];
+
+        return wantedPokemon.includes(pokemonName);
+    }
 }
-
-filterTweets();
