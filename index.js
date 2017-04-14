@@ -1,6 +1,6 @@
 'use strict'
 
-function filterTweets() {
+function filterTweets(event, context, callback) {
     var logging = true;
     var live = false;
 
@@ -9,19 +9,24 @@ function filterTweets() {
 
     const dbTableName = 'latestTweetProcessed';
     const dbPrimaryKey = 'twitterStream';
+    const dbTweetIdColumnName = 'latestTweetProcessed';
     const londonPogoMapKeyValue = 'LondonPogoMap';
+
+    var createNewDynamoRecord = true;
 
     AWS.config.update({
         region: "us-west-2",
         endpoint: "http://localhost:8000"
     });
 
-    var client = new Twitter({
+    var twitterClient = new Twitter({
         consumer_key: 'PIn3Ef1nElOQ5bRODTG49dU3t',
         consumer_secret: 'sCTvJtXDXP3RTNvPi9PLNnj6d0WdxPjlH8ZjXskdiRsnwfK7e3',
         access_token_key: '848280385851187201-de5PvKLGEq55XQQW54XrtL52tpeuWXW',
         access_token_secret: 'RHnlSgpWhoSL2ghJvpQMbkDxGBhAIhYDPEkkAK0BEb2VB'
     });
+
+    var docClient = new AWS.DynamoDB.DocumentClient();
 
     var wantedPokemon = [
         'Lapras',
@@ -83,9 +88,7 @@ function filterTweets() {
                     ":feed": londonPogoMapKeyValue
                 }
             };
-            var docClient = new AWS.DynamoDB.DocumentClient();
             docClient.query(params, extractTweetId);
-            //client.get('statuses/user_timeline', timelineParams, timelineCallback);
         }
     }
 
@@ -97,7 +100,8 @@ function filterTweets() {
         } else {
             var latestTweetProcessed = '849338036789932038';
             if (data.Items.length > 0) {
-                latestTweetProcessed = data.Items[0].latestTweetProcessed;
+                createNewDynamoRecord = false;
+                latestTweetProcessed = data.Items[0][dbTweetIdColumnName];
             }
 
             var timelineParams = {
@@ -107,7 +111,7 @@ function filterTweets() {
                 since_id: latestTweetProcessed
             };
 
-            client.get('statuses/user_timeline', timelineParams, timelineCallback);
+            twitterClient.get('statuses/user_timeline', timelineParams, timelineCallback);
         }
     }
 
@@ -122,7 +126,7 @@ function filterTweets() {
 
         log('Got tweets');
 
-        latestTweetId = getLatestTweetId(tweets);
+        latestTweetId = findLatestTweetId(tweets);
         var filteredTweets = filter(tweets);
 
         if (filteredTweets.length === 0) {
@@ -138,28 +142,13 @@ function filterTweets() {
         }
     };
 
-    function getLatestTweetId(tweets) {
+    function findLatestTweetId(tweets) {
         if (tweets.length === 0) {
             return undefined;
         }
 
-        //qq:DCC
-    }
-
-    function writeLatestTweetToDb() {
-        if (latestTweetId !== undefined) {
-            //qq:DCC
-        }
-
-        context.done(null, "success");
-    }
-
-    function filter(tweets) {
-        log('Filtering ' + tweets.length + ' tweets');
-        //qq:DCC filter
-
-        var ret = [];
-        return ret;
+        // Assume tweets are always in descending order
+        return tweets[0].id_str;
     };
 
     function retweet(tweet) {
@@ -170,7 +159,7 @@ function filterTweets() {
 
         if (live) {
             log('Retweeting: ' + tweet);
-            client.post('statuses/retweet', retweetParams, retweetCallback);
+            twitterClient.post('statuses/retweet', retweetParams, retweetCallback);
         }
     };
 
@@ -191,4 +180,57 @@ function filterTweets() {
             writeLatestTweetToDb();
         }
     };
+
+    function writeLatestTweetToDb() {
+        if (latestTweetId !== undefined) {
+            if (createNewDynamoRecord) {
+                var params = {
+                    TableName: dbTableName,
+                    Item: {}
+                };
+                params.Item[dbPrimaryKey] = londonPogoMapKeyValue;
+                params.Item[dbTweetIdColumnName] = latestTweetId;
+                docClient.put(params, endLambda);
+            }
+            else {
+                var params = {
+                    TableName: dbTableName,
+                    Key:{},
+                    UpdateExpression: "set " + dbTweetIdColumnName + " = :t",
+                    ExpressionAttributeValues: {
+                        ":t": latestTweetId
+                    },
+                    ReturnValues:"UPDATED_NEW"
+                };
+                params.Key[dbPrimaryKey] = londonPogoMapKeyValue;
+                docClient.update(params, endLambda);
+            }
+        }
+        else {
+            endLambda();
+        }
+    }
+
+    function endLambda(error, data) {
+        if (error) {
+            const errorMessage = 'Error writing tweet ID to DB: ' + error;
+            log(errorMessage);
+            context.done(errorMessage);
+        }
+        else {
+            context.done(null, "success");
+        }
+    }
+
+    function filter(tweets) {
+        log('Filtering ' + tweets.length + ' tweets');
+        //qq:DCC Actually filter
+
+        var ret = [];
+        return ret;
+    };
+
+
 }
+
+filterTweets();
