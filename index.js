@@ -232,14 +232,44 @@ function filterTweets(event, context, callback) {
     function matchesFilter(tweet) {
         //[London] Lapras (M) (IV: 57%) until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
         var textParser = /\[.*\] (.*) \(.*\) \(IV: \d+%\) until.*/;
-        var matchResult = textParser.exec(tweet.text);
+        var textMatchResult = textParser.exec(tweet.text);
 
-        if (matchResult === null) {
+        if (textMatchResult === null) {
             return false;
         }
 
-        var pokemonName = matchResult[1];
+        var pokemonName = textMatchResult[1];
 
-        return wantedPokemon.includes(pokemonName);
+        if (!wantedPokemon.includes(pokemonName)) {
+            return false;
+        }
+
+        // https://maps.google.com/maps?q=51.5775697,-0.14814645
+        var googleMapsUrl = tweet.entities.urls[1].expanded_url;
+        var linkParser = /https:\/\/maps\.google\.com\/maps\?q=(-?\d*\.\d+),(-?\d*\.\d+)/;
+        var linkMatchResult = linkParser.exec(googleMapsUrl);
+
+        if (linkMatchResult === null) {
+            return false;
+        }
+
+        var latitude = parseFloat(linkMatchResult[1]);
+        var longitude = parseFloat(linkMatchResult[2]);
+
+        return isCloseToHighgateStudios(latitude, longitude);
+    }
+
+    function isCloseToHighgateStudios(latitude, longitude) {
+        var hsLat = 51.553864;
+        var hsLong = -0.144119;
+        // HS lat, long: 51.553864, -0.144119
+        // Mid Hampstead Heath: 51.565883, -0.170702
+        // Radius^2 = 0.012019^2 + 0.026583^2]
+        // Radius = 0.0291738282, let's say 0.03
+        var distanceFromHs = Math.sqrt(Math.pow(hsLat - latitude, 2) + Math.pow(hsLong - longitude, 2));
+
+        return distanceFromHs <= 0.03;
     }
 }
+
+filterTweets();
