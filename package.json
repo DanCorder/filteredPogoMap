@@ -9,6 +9,7 @@
   "author": "Dan Corder",
   "license": "MIT",
   "dependencies": {
+    "haversine": "^1.0.2",
     "twitter": "^1.7.0"
   },
   "devDependencies": {

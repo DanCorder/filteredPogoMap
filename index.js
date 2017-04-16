@@ -6,6 +6,13 @@ function filterTweets(event, context, callback) {
 
     var Twitter = require('twitter');
     var AWS = require("aws-sdk");
+    var haversine = require('haversine');
+
+    var highgateStudiosCoordinates = {
+        latitude: 51.553864,
+        longitude: -0.144119
+    };
+    var radiusMeters = 2500;
 
     const dbTableName = 'latestTweetProcessed';
     const dbPrimaryKey = 'twitterStream';
@@ -253,22 +260,12 @@ function filterTweets(event, context, callback) {
             return false;
         }
 
-        var latitude = parseFloat(linkMatchResult[1]);
-        var longitude = parseFloat(linkMatchResult[2]);
+        var pokemonCoordinates = {
+            latitude: parseFloat(linkMatchResult[1]),
+            longitude: parseFloat(linkMatchResult[2])
+        };
 
-        return isCloseToHighgateStudios(latitude, longitude);
-    }
-
-    function isCloseToHighgateStudios(latitude, longitude) {
-        var hsLat = 51.553864;
-        var hsLong = -0.144119;
-        // HS lat, long: 51.553864, -0.144119
-        // Mid Hampstead Heath: 51.565883, -0.170702
-        // Radius^2 = 0.012019^2 + 0.026583^2]
-        // Radius = 0.0291738282, let's say 0.03
-        var distanceFromHs = Math.sqrt(Math.pow(hsLat - latitude, 2) + Math.pow(hsLong - longitude, 2));
-
-        return distanceFromHs <= 0.03;
+        return haversine(highgateStudiosCoordinates, pokemonCoordinates, {unit: 'meter', threshold: radiusMeters});
     }
 }
 
