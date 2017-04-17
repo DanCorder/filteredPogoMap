@@ -12,7 +12,6 @@ function filterTweets(event, context, callback) {
         latitude: 51.553864,
         longitude: -0.144119
     };
-    var radiusMeters = 2500;
 
     const dbTableName = 'latestTweetProcessed';
     const dbPrimaryKey = 'twitterStream';
@@ -36,29 +35,29 @@ function filterTweets(event, context, callback) {
     var docClient = new AWS.DynamoDB.DocumentClient();
 
     var wantedPokemon = [
-        { name: 'Lapras', minIv: 80 },
-        { name: 'Snorlax', minIv: 80 },
-        { name: 'Gyrados', minIv: 80 },
-        { name: 'Togetic', minIv: 0 },
-        { name: 'Chansey', minIv: 0 },
-        { name: 'Vaporeon', minIv: 80 },
-        { name: 'Articuno', minIv: 0 },
-        { name: 'Zapdos', minIv: 0 },
-        { name: 'Moltres', minIv: 0 },
-        { name: 'Dragonite', minIv: 80 },
-        { name: 'Mewtwo', minIv: 0 },
-        { name: 'Mew', minIv: 0 },
-        { name: 'Muk', minIv: 80 },
-        { name: 'Golem', minIv: 80 },
-        { name: 'Meganium', minIv: 0 },
-        { name: 'Ampharos', minIv: 0 },
-        { name: 'Espeon', minIv: 80 },
-        { name: 'Unown', minIv: 0 },
-        { name: 'Heracross', minIv: 0 },
-        { name: 'Porygon2', minIv: 0 },
-        { name: 'Blissey', minIv: 0 },
-        { name: 'Pupitar', minIv: 0 },
-        { name: 'Tyranitar', minIv: 0 },
+        { name: 'Lapras', minIv: 80, radiusMeters: 1000 },
+        { name: 'Snorlax', minIv: 80, radiusMeters: 1000 },
+        { name: 'Gyrados', minIv: 80, radiusMeters: 1000 },
+        { name: 'Togetic', minIv: 0, radiusMeters: 2500 },
+        { name: 'Chansey', minIv: 0, radiusMeters: 2500 },
+        { name: 'Vaporeon', minIv: 80, radiusMeters: 1000 },
+        { name: 'Articuno', minIv: 0, radiusMeters: 100000 },
+        { name: 'Zapdos', minIv: 0, radiusMeters: 100000 },
+        { name: 'Moltres', minIv: 0, radiusMeters: 100000 },
+        { name: 'Dragonite', minIv: 80, radiusMeters: 2500 },
+        { name: 'Mewtwo', minIv: 0, radiusMeters: 100000 },
+        { name: 'Mew', minIv: 0, radiusMeters: 100000 },
+        { name: 'Muk', minIv: 80, radiusMeters: 1000 },
+        { name: 'Golem', minIv: 80, radiusMeters: 1000 },
+        { name: 'Meganium', minIv: 0, radiusMeters: 1000 },
+        { name: 'Ampharos', minIv: 0, radiusMeters: 100000 },
+        { name: 'Espeon', minIv: 80, radiusMeters: 1000 },
+        { name: 'Unown', minIv: 0, radiusMeters: 100000 },
+        { name: 'Heracross', minIv: 0, radiusMeters: 2500 },
+        { name: 'Porygon2', minIv: 0, radiusMeters: 2500 },
+        { name: 'Blissey', minIv: 0, radiusMeters: 2500 },
+        { name: 'Pupitar', minIv: 0, radiusMeters: 2500 },
+        { name: 'Tyranitar', minIv: 0, radiusMeters: 2500 },
     ];
 
     function log(message) {
@@ -274,7 +273,7 @@ function filterTweets(event, context, callback) {
             return false;
         }
 
-        // https://maps.google.com/maps?q=51.5775697,-0.14814645
+        // Example URL https://maps.google.com/maps?q=51.5775697,-0.14814645
         var googleMapsUrl = tweet.entities.urls[1].expanded_url;
         var linkParser = /https:\/\/maps\.google\.com\/maps\?q=(-?\d*\.\d+),(-?\d*\.\d+)/;
         var linkMatchResult = linkParser.exec(googleMapsUrl);
@@ -288,7 +287,13 @@ function filterTweets(event, context, callback) {
             longitude: parseFloat(linkMatchResult[2])
         };
 
-        return haversine(highgateStudiosCoordinates, pokemonCoordinates, {unit: 'meter', threshold: radiusMeters});
+        return haversine(
+            highgateStudiosCoordinates,
+            pokemonCoordinates,
+            {
+                unit: 'meter',
+                threshold: wantedDetails[0].radiusMeters
+            });
     }
 }
 
