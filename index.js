@@ -36,11 +36,29 @@ function filterTweets(event, context, callback) {
     var docClient = new AWS.DynamoDB.DocumentClient();
 
     var wantedPokemon = [
-        'Lapras',
-        'Snorlax',
-        'Gyrados',
-        'Togetic'
-        //qq:DCC Add more
+        { name: 'Lapras', minIv: 80 },
+        { name: 'Snorlax', minIv: 80 },
+        { name: 'Gyrados', minIv: 80 },
+        { name: 'Togetic', minIv: 0 },
+        { name: 'Chansey', minIv: 0 },
+        { name: 'Vaporeon', minIv: 80 },
+        { name: 'Articuno', minIv: 0 },
+        { name: 'Zapdos', minIv: 0 },
+        { name: 'Moltres', minIv: 0 },
+        { name: 'Dragonite', minIv: 80 },
+        { name: 'Mewtwo', minIv: 0 },
+        { name: 'Mew', minIv: 0 },
+        { name: 'Muk', minIv: 80 },
+        { name: 'Golem', minIv: 80 },
+        { name: 'Meganium', minIv: 0 },
+        { name: 'Ampharos', minIv: 0 },
+        { name: 'Espeon', minIv: 80 },
+        { name: 'Unown', minIv: 0 },
+        { name: 'Heracross', minIv: 0 },
+        { name: 'Porygon2', minIv: 0 },
+        { name: 'Blissey', minIv: 0 },
+        { name: 'Pupitar', minIv: 0 },
+        { name: 'Tyranitar', minIv: 0 },
     ];
 
     function log(message) {
@@ -238,7 +256,7 @@ function filterTweets(event, context, callback) {
 
     function matchesFilter(tweet) {
         //[London] Lapras (M) (IV: 57%) until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
-        var textParser = /\[.*\] (.*) \(.*\) \(IV: \d+%\) until.*/;
+        var textParser = /\[.*\] (.*) \(.*\) \(IV: (\d+)%\) until.*/;
         var textMatchResult = textParser.exec(tweet.text);
 
         if (textMatchResult === null) {
@@ -246,8 +264,13 @@ function filterTweets(event, context, callback) {
         }
 
         var pokemonName = textMatchResult[1];
+        var pokemonIv = parseInt(textMatchResult[2]);
 
-        if (!wantedPokemon.includes(pokemonName)) {
+        var wantedDetails = wantedPokemon.filter(wp => wp.name === pokemonName);
+        if (wantedDetails.length === 0) {
+            return false;
+        }
+        if (pokemonIv < wantedDetails[0].minIv) {
             return false;
         }
 
