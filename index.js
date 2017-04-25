@@ -50,10 +50,10 @@ function filterTweets(event, context, callback) {
         { name: 'Muk', minIv: 80, radiusMeters: 1000 },
         { name: 'Golem', minIv: 80, radiusMeters: 1000 },
         { name: 'Meganium', minIv: 0, radiusMeters: 1000 },
-        { name: 'Ampharos', minIv: 0, radiusMeters: 100000 },
+        { name: 'Ampharos', minIv: 0, radiusMeters: 2500 },
         { name: 'Espeon', minIv: 80, radiusMeters: 1000 },
         { name: 'Unown', minIv: 0, radiusMeters: 100000 },
-        { name: 'Heracross', minIv: 0, radiusMeters: 2500 },
+        { name: 'Heracross', minIv: 0, radiusMeters: 100000 },
         { name: 'Porygon2', minIv: 0, radiusMeters: 2500 },
         { name: 'Blissey', minIv: 0, radiusMeters: 2500 },
         { name: 'Pupitar', minIv: 0, radiusMeters: 2500 },
@@ -255,7 +255,9 @@ function filterTweets(event, context, callback) {
 
     function matchesFilter(tweet) {
         //[London] Lapras (M) (IV: 57%) until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
-        var textParser = /\[.*\] (.*) \(.*\) \(IV: (\d+)%\) until.*/;
+        //var textParser = /\[.*\] (.*) \(.*\) \(IV: (\d+)%\) until.*/;
+        //[London] Lapras (M)  until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
+        var textParser = /\[.*\] (.*) \(.*\)  until.*/;
         var textMatchResult = textParser.exec(tweet.text);
 
         if (textMatchResult === null) {
@@ -263,15 +265,15 @@ function filterTweets(event, context, callback) {
         }
 
         var pokemonName = textMatchResult[1];
-        var pokemonIv = parseInt(textMatchResult[2]);
+        //var pokemonIv = parseInt(textMatchResult[2]);
 
         var wantedDetails = wantedPokemon.filter(wp => wp.name === pokemonName);
         if (wantedDetails.length === 0) {
             return false;
         }
-        if (pokemonIv < wantedDetails[0].minIv) {
-            return false;
-        }
+        // if (pokemonIv < wantedDetails[0].minIv) {
+        //     return false;
+        // }
 
         // Example URL https://maps.google.com/maps?q=51.5775697,-0.14814645
         var googleMapsUrl = tweet.entities.urls[1].expanded_url;
