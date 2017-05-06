@@ -34,6 +34,10 @@ function filterTweets(event, context, callback) {
 
     var docClient = new AWS.DynamoDB.DocumentClient();
 
+// Tweeted Pokemon:
+//Gen 1: Venusaur, Charizard, Blastoise, Arcanine, Alakazam, Exeggutor, Chansey, Gyarados, Lapras, Vaporeon, Jolteon, Flareon, Aerodactyl, Snorlax, Articuno, Zapdos, Moltres, Dragonite, Mewtwo, Mew, Hitmonlee, Hitmonchan, Muk, Machamp, Lickitung, Golem, Rhydon, Tangela.
+//Gen 2: Meganium, Typhlosion, Feraligatr, Togetic, Ampharos, Espeon, Umbreon, Unown, Forretress, Steelix, Scizor, Heracross, Kingdra, Donphan, Porygon2, Hitmontop, Miltank, Blissey, Pupitar, Tyranitar.
+
     var wantedPokemon = [
         { name: 'Lapras', minIv: 80, radiusMeters: 1000 },
         { name: 'Snorlax', minIv: 80, radiusMeters: 1000 },
@@ -255,9 +259,8 @@ function filterTweets(event, context, callback) {
 
     function matchesFilter(tweet) {
         //[London] Lapras (M) (IV: 57%) until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
-        //var textParser = /\[.*\] (.*) \(.*\) \(IV: (\d+)%\) until.*/;
         //[London] Lapras (M)  until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
-        var textParser = /\[.*\] (.*) \(.*\)  until.*/;
+        var textParser = /\[.*\] (.*) \(.*\) (\(IV: (\d+)%\))? until.*/;
         var textMatchResult = textParser.exec(tweet.text);
 
         if (textMatchResult === null) {
@@ -265,15 +268,18 @@ function filterTweets(event, context, callback) {
         }
 
         var pokemonName = textMatchResult[1];
-        //var pokemonIv = parseInt(textMatchResult[2]);
+        var pokemonIv = 100;
+        if (textMatchResult.length >= 4) {
+            pokemonIv = parseInt(textMatchResult[3]);
+        }
 
         var wantedDetails = wantedPokemon.filter(wp => wp.name === pokemonName);
         if (wantedDetails.length === 0) {
             return false;
         }
-        // if (pokemonIv < wantedDetails[0].minIv) {
-        //     return false;
-        // }
+        if (pokemonIv < wantedDetails[0].minIv) {
+            return false;
+        }
 
         // Example URL https://maps.google.com/maps?q=51.5775697,-0.14814645
         var googleMapsUrl = tweet.entities.urls[1].expanded_url;
