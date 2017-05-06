@@ -151,22 +151,22 @@ function filterTweets(event, context, callback) {
             const errorMessage = 'Error getting tweets: ' + error;
             log(errorMessage);
             context.done(errorMessage);
-        }
+        } else {
+            log('Got tweets');
 
-        log('Got tweets');
+            latestTweetId = findLatestTweetId(tweets);
+            var filteredTweets = filter(tweets);
 
-        latestTweetId = findLatestTweetId(tweets);
-        var filteredTweets = filter(tweets);
+            if (filteredTweets.length === 0) {
+                log('Nothing to retweet');
+                writeLatestTweetToDb();
+            }
+            else {
+                filteredTweetCount = filteredTweets.length;
 
-        if (filteredTweets.length === 0) {
-            log('Nothing to retweet');
-            writeLatestTweetToDb();
-        }
-        else {
-            filteredTweetCount = filteredTweets.length;
-
-            for (var i = 0; i < filteredTweets.length; i++) {
-                retweet(filteredTweets[i]);
+                for (var i = 0; i < filteredTweets.length; i++) {
+                    retweet(filteredTweets[i]);
+                }
             }
         }
     };
