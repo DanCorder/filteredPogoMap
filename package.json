@@ -4,7 +4,9 @@
   "description": "Follow a twitter user and retweet based on a filter",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "with-local-db": "node-lambda run --configFile local.env",
+    "with-live-db": "node-lambda run --configFile live.env"
   },
   "author": "Dan Corder",
   "license": "MIT",
@@ -13,6 +15,7 @@
     "twitter": "^1.7.0"
   },
   "devDependencies": {
-    "aws-sdk": "^2.38.0"
+    "aws-sdk": "^2.38.0",
+    "node-lambda": "^0.9.0"
   }
 }

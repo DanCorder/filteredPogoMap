@@ -1,1 +1,8 @@
+/.env
+/context.json
+/event_sources.json
+/live.env
+/local.env
+/event.json
+Archive.zip
 node_modules

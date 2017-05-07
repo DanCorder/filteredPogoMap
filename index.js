@@ -1,6 +1,6 @@
 'use strict'
 
-function filterTweets(event, context, callback) {
+exports.handler = function filterTweets(event, context, callback) {
     var logging = true;
     var live = false;
 
@@ -22,14 +22,14 @@ function filterTweets(event, context, callback) {
 
     AWS.config.update({
         region: "us-west-2",
-        endpoint: "http://localhost:8000"
+        endpoint: process.env.dynamodb_url
     });
 
     var twitterClient = new Twitter({
-        consumer_key: 'PIn3Ef1nElOQ5bRODTG49dU3t',
-        consumer_secret: 'sCTvJtXDXP3RTNvPi9PLNnj6d0WdxPjlH8ZjXskdiRsnwfK7e3',
-        access_token_key: '848280385851187201-de5PvKLGEq55XQQW54XrtL52tpeuWXW',
-        access_token_secret: 'RHnlSgpWhoSL2ghJvpQMbkDxGBhAIhYDPEkkAK0BEb2VB'
+        consumer_key: process.env.twitter_consumer_key,
+        consumer_secret: process.env.twitter_consumer_secret,
+        access_token_key: process.env.twitter_access_token_key,
+        access_token_secret: process.env.twitter_access_token_secret
     });
 
     var docClient = new AWS.DynamoDB.DocumentClient();
@@ -94,7 +94,6 @@ function filterTweets(event, context, callback) {
                 dynamodb.createTable(params, getLatestTweetId);
             } else {
                 log('Unrecognised error getting table details. Aborting.');
-                context.done('Unrecognised error getting table details.');
             }
         } else {
             getLatestTweetId();
@@ -105,7 +104,6 @@ function filterTweets(event, context, callback) {
         if (error) {
             const errorMessage = 'Error creating table: ' + JSON.stringify(error, null, 2);
             log(errorMessage);
-            context.done(errorMessage);
         } else {
             var params = {
                 TableName: dbTableName,
@@ -125,7 +123,6 @@ function filterTweets(event, context, callback) {
         if (error) {
             const errorMessage = 'Error reading latest tweet: ' + error;
             log(errorMessage);
-            context.done(errorMessage);
         } else {
             var latestTweetProcessed = '849338036789932038';
             if (data.Items.length > 0) {
@@ -150,7 +147,6 @@ function filterTweets(event, context, callback) {
         if (error) {
             const errorMessage = 'Error getting tweets: ' + error;
             log(errorMessage);
-            context.done(errorMessage);
         } else {
             log('Got tweets');
 
@@ -245,10 +241,6 @@ function filterTweets(event, context, callback) {
         if (error) {
             const errorMessage = 'Error writing tweet ID to DB: ' + error;
             log(errorMessage);
-            context.done(errorMessage);
-        }
-        else {
-            context.done(null, "success");
         }
     }
 
@@ -304,5 +296,3 @@ function filterTweets(event, context, callback) {
             });
     }
 }
-
-filterTweets();
