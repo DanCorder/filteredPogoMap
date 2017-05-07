@@ -7,9 +7,18 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceRoot}/index.js",
-            "cwd": "${workspaceRoot}"
+            "name": "Launch with local environment",
+            "program": "${workspaceRoot}/node_modules/node-lambda/bin/node-lambda",
+            "cwd": "${workspaceRoot}",
+            "args": ["run", "--configFile", "${workspaceRoot}/local.env"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch with live environment",
+            "program": "${workspaceRoot}/node_modules/node-lambda/bin/node-lambda",
+            "cwd": "${workspaceRoot}",
+            "args": ["run", "--configFile", "${workspaceRoot}/live.env"]
         },
         {
             "type": "node",
