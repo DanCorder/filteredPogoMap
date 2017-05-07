@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "with-local-db": "node-lambda run --configFile local.env",
-    "with-live-db": "node-lambda run --configFile live.env"
+    "dev": "node-lambda run --configFile local.env",
+    "live": "node-lambda run --configFile live.env"
   },
   "author": "Dan Corder",
   "license": "MIT",

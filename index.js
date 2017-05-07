@@ -2,7 +2,6 @@
 
 exports.handler = function filterTweets(event, context, callback) {
     var logging = true;
-    var live = false;
 
     var Twitter = require('twitter');
     var AWS = require("aws-sdk");
@@ -182,7 +181,7 @@ exports.handler = function filterTweets(event, context, callback) {
         };
         log('retweeting tweet id ' + tweet.id_str);
 
-        if (live) {
+        if (process.env.retweet_enabled) {
             twitterClient.post('statuses/retweet', retweetParams, retweetCallback);
         } else {
             retweetCallback();
