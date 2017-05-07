@@ -181,7 +181,7 @@ exports.handler = function filterTweets(event, context, callback) {
         };
         log('retweeting tweet id ' + tweet.id_str);
 
-        if (process.env.retweet_enabled) {
+        if (process.env.retweet_enabled === 'true') {
             twitterClient.post('statuses/retweet', retweetParams, retweetCallback);
         } else {
             retweetCallback();
