@@ -251,10 +251,12 @@ exports.handler = function filterTweets(event, context, callback) {
     function matchesFilter(tweet) {
         //[London] Lapras (M) (IV: 57%) until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
         //[London] Lapras (M)  until 08:38:21PM at 113 Blackshaw Rd https://t.co/eCPFnl9k7n https://t.co/vYCLEbvt9L
-        var textParser = /\[.*\] (.*) \(.*\) (\(IV: (\d+)%\))? until.*/;
+        //[London] Rhydon (F) (IV: 42% - CP: 2103) until 09:46:53PM at 165 Sydenham Hill https://t.co/ZNXvuakyjh https://t.co/KlpQoo8nl6
+        var textParser = /\[.*\] (.*) \(.*\) (\(IV: (\d+)%.*\))? until.*/;
         var textMatchResult = textParser.exec(tweet.text);
 
         if (textMatchResult === null) {
+            log('Didn\'t understand tweet: ' + tweet.text);
             return false;
         }
 
